@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WISASP Lobby - Select Interview</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="glass-card">
+        <!-- PPT: Live status for futuristic feel -->
+        <div class="status-indicator">
+            <div class="status-dot"></div>
+            <span>AI TERMINAL LIVE</span>
+        </div>
+        <h1 class="neon-title" style="font-size: 2.5rem;">Interview Lobby</h1>
+
+        <!-- Config form (PPT: localStorage persistence) -->
+        <div style="margin: 2rem 0;">
+            <div class="input-group">
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--neon-cyan);">Topic</label>
+                <select id="topic">
+                    <option value="Python Developer">🐍 Python Developer</option>
+                    <option value="JavaScript Full-Stack">⚛️ JavaScript Full-Stack</option>
+                    <option value="Data Science">📊 Data Science</option>
+                    <option value="HR Behavioral">💼 HR Behavioral</option>
+                    <option value="DevOps Engineer">🐳 DevOps Engineer</option>
+                    <option value="Marketing">📈 Marketing</option>
+                </select>
+            </div>
+            
+            <div class="input-group">
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--neon-cyan);">Difficulty</label>
+                <select id="difficulty">
+                    <option value="Beginner">Beginner</option>
+                    <option value="Intermediate">Intermediate</option>
+                    <option value="Advanced">Advanced</option>
+                </select>
+            </div>
+        </div>
+
+        <button onclick="startInterview()" class="btn-primary" style="font-size: 1.2rem;">
+            🚀 INITIALIZE AI INTERVIEW
+        </button>
+
+        <div style="text-align: center; margin-top: 2rem; color: var(--text-secondary); font-size: 0.9rem;">
+            24/7 On-Demand • Zero Human Intervention • Session Saved
+        </div>
+    </div>
+
+    <script>
+        // PPT: Role check (candidates only for lobby)
+        async function checkAuth() {
+            try {
+                const res = await fetch('../backend/auth.php?action=check');  // Simple session check
+                const json = await res.json();
+                if (!json.authenticated || json.role !== 'candidate') {
+                    window.location.href = 'auth.html';
+                }
+            } catch {
+                window.location.href = 'auth.html';
+            }
+        }
+        checkAuth();  // Run on load
+
+        function startInterview() {
+            const topic = document.getElementById('topic').value;
+            const difficulty = document.getElementById('difficulty').value;
+            localStorage.setItem('interviewTopic', topic);
+            localStorage.setItem('interviewDifficulty', difficulty);
+            window.location.href = 'index.html';  // PPT: Dynamic greeting
+        }
+    </script>
+</body>
+</html>

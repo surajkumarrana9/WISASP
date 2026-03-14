@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WISASP - AI Chat Terminal</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="glass-card" style="max-width: 800px; height: 80vh; display: flex; flex-direction: column;">
+        <header>
+            <h1 class="neon-text">WISASP AI TERMINAL <span style="font-weight: 400; font-size: 0.8em;">v1.0</span></h1>
+            <div class="status-indicator">
+                <div class="status-dot"></div>
+                <span>SYSTEM LIVE | DB:3307</span>
+            </div>
+        </header>
+
+        <div id="chat-terminal">
+            <div class="msg ai-msg" id="initialMsg">
+                <strong>AI:</strong> Initializing...
+            </div>
+        </div>
+
+        <div class="input-container">
+            <textarea id="userInput" rows="2" placeholder="Type your response, code, or questions... (Enter to send)"></textarea>
+            <button onclick="processResponse()" class="btn-primary" id="sendBtn">SEND →</button>
+        </div>
+    </div>
+
+    <script>
+        // PPT: Auth check + topic greeting
+        async function initChat() {
+            try {
+                const res = await fetch('../backend/auth.php?action=check');
+                const json = await res.json();
+                if (!json.authenticated) {
+                    window.location.href = 'auth.html';
+                    return;
+                }
+            } catch {
+                window.location.href = 'auth.html';
+                return;
+            }
+
+            // Dynamic greeting from localStorage (PPT: Seamless lobby flow)
+            const topic = localStorage.getItem('interviewTopic') || 'General';
+            const difficulty = localStorage.getItem('interviewDifficulty') || 'Intermediate';
+            document.getElementById('initialMsg').innerHTML = 
+                `<strong>AI:</strong> Welcome to ${topic} interview (${difficulty} level). I'm your AI interviewer. Please introduce yourself and begin.`;
+        }
+        initChat();
+
+        // PPT: Chat logic (POST to api.php, JSON chat_log append)
+        document.getElementById('userInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                processResponse();
+            }
+        });
+
+        async function processResponse() {
+            const input = document.getElementById('userInput');
+            const terminal = document.getElementById('chat-terminal');
+            const btn = document.getElementById('sendBtn');
+            const msg = input.value.trim();
+            if (!msg) return;
+
+            // User msg
+            terminal.innerHTML += `<div class="msg user-msg"><strong>YOU:</strong> ${msg}</div>`;
+            input.value = '';
+            terminal.scrollTop = terminal.scrollHeight;
+            btn.disabled = true;
+
+            try {
+                const formData = new FormData();
+                formData.append('msg', msg);
+                formData.append('topic', localStorage.getItem('interviewTopic') || '');
+
+                const res = await fetch('../backend/api.php', { method: 'POST', body: formData });
+                const data = await res.json();
+
+                terminal.innerHTML += `<div class="msg ai-msg"><strong>AI:</strong> ${data.reply}</div>`;
+            } catch (err) {
+                terminal.innerHTML += `<div class="msg" style="color: #ff6b6b;"><strong>ERROR:</strong> ${err.message}</div>`;
+            }
+
+            btn.disabled = false;
+            terminal.scrollTop = terminal.scrollHeight;
+        }
+    </script>
+</body>
+</html>

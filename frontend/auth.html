@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WISASP - Authentication</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="glass-card">
+        <!-- PPT: Dual-mode toggle with smooth CSS transition -->
+        <div class="status-indicator">
+            <div class="status-dot"></div>
+            <span>SECURE AUTH READY</span>
+        </div>
+        <h1 class="neon-title">WISASP</h1>
+        <p style="text-align: center; color: var(--neon-cyan); font-weight: 500;">AI Interview Platform</p>
+
+        <!-- Tab toggle (PPT: UX excellence - smooth switch) -->
+        <div class="tab-buttons">
+            <button class="tab-btn active" onclick="switchTab('login')">Login</button>
+            <button class="tab-btn" onclick="switchTab('register')">Register</button>
+        </div>
+
+        <!-- Login Form -->
+        <form id="loginForm" style="display: block;">
+            <div class="input-group">
+                <input type="email" id="loginEmail" placeholder="Email" required>
+            </div>
+            <div class="input-group">
+                <input type="password" id="loginPassword" placeholder="Password" required>
+            </div>
+            <div class="input-group">
+                <select id="loginRole" required>
+                    <option value="">Select Role</option>
+                    <option value="candidate">Candidate</option>
+                    <option value="recruiter">Recruiter</option>
+                </select>
+            </div>
+            <button type="submit" class="btn-primary">LOGIN</button>
+        </form>
+
+        <!-- Register Form (PPT: Conditional fields) -->
+        <form id="registerForm" style="display: none;">
+            <div class="input-group">
+                <input type="text" id="regFullname" placeholder="Full Name" required>
+            </div>
+            <div class="input-group">
+                <input type="email" id="regEmail" placeholder="Email" required>
+            </div>
+            <div class="input-group">
+                <input type="password" id="regPassword" placeholder="Password" required>
+            </div>
+            <div class="input-group">
+                <select id="regRole" onchange="toggleCompany()" required>
+                    <option value="">Select Role</option>
+                    <option value="candidate">Candidate</option>
+                    <option value="recruiter">Recruiter</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <input type="tel" id="regPhone" placeholder="Phone">
+            </div>
+            <div class="input-group">
+                <input type="text" id="regExperience" placeholder="Experience (e.g., 2 years)">
+            </div>
+            <div class="input-group" id="regCompanyGroup" style="display: none;">
+                <input type="text" id="regCompany" placeholder="Company Name">
+            </div>
+            <button type="submit" class="btn-primary">REGISTER</button>
+        </form>
+    </div>
+
+    <script>
+        // PPT: Smooth tab toggle logic
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById('loginForm').style.display = tab === 'login' ? 'block' : 'none';
+            document.getElementById('registerForm').style.display = tab === 'register' ? 'block' : 'none';
+        }
+
+        // PPT: Conditional company field (Recruiter only)
+        function toggleCompany() {
+            const role = document.getElementById('regRole').value;
+            document.getElementById('regCompanyGroup').style.display = role === 'recruiter' ? 'block' : 'none';
+        }
+
+        // Login handler (PPT: Async POST to backend/auth.php)
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = new FormData();
+            data.append('action', 'login');
+            data.append('email', document.getElementById('loginEmail').value);
+            data.append('password', document.getElementById('loginPassword').value);
+            data.append('role', document.getElementById('loginRole').value);
+
+            try {
+                const res = await fetch('../backend/auth.php', { method: 'POST', body: data });
+                const json = await res.json();
+                if (json.success) {
+                    // PPT: Role-based redirect
+                    window.location.href = json.role === 'candidate' ? 'lobby.html' : 'recruiter_dash.html';
+                } else {
+                    alert(json.message);
+                }
+            } catch (err) {
+                alert('Connection error');
+            }
+        });
+
+        // Register handler
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = new FormData();
+            data.append('action', 'register');
+            data.append('fullname', document.getElementById('regFullname').value);
+            data.append('email', document.getElementById('regEmail').value);
+            data.append('password', document.getElementById('regPassword').value);
+            data.append('role', document.getElementById('regRole').value);
+            data.append('phone', document.getElementById('regPhone').value);
+            data.append('experience', document.getElementById('regExperience').value);
+            data.append('company_name', document.getElementById('regCompany').value);
+
+            try {
+                const res = await fetch('../backend/auth.php', { method: 'POST', body: data });
+                const json = await res.json();
+                if (json.success) {
+                    alert('Registered! Please login.');
+                    switchTab('login');
+                } else {
+                    alert(json.message);
+                }
+            } catch (err) {
+                alert('Connection error');
+            }
+        });
+    </script>
+
+    <style>
+        /* Quick tab styles (integrated in main CSS but override for auth) */
+        .tab-btn.active { color: var(--neon-cyan) !important; border-bottom: 2px solid var(--neon-cyan) !important; }
+    </style>
+</body>
+</html>
